@@ -288,6 +288,8 @@ git clone https://github.com/himachhatbar17/Faceveil-Deepfake-Detection-
 cd Faceveil-Deepfake-Detection-
 ```
 
+> After cloning, `Faceveil-Deepfake-Detection-` is the repository root. Project folders such as `src/` and `public/` are located directly inside this directory (not inside a separate top-level `faceveil/` folder).
+
 ---
 
 ## Install Dependencies
