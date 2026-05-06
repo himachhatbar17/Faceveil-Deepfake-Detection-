@@ -31,7 +31,7 @@ export default function Hero({ onStart }) {
         <span style={{ background: 'linear-gradient(135deg, #ff3d5a 0%, #9b6bff 50%, #00dfa2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           Deepfakes
         </span>
-        <br />With Multi-Stream AI
+        <br />With Multi-Stream Models
       </h1>
 
       <p style={{ fontSize: '1.05rem', color: 'var(--muted)', maxWidth: 580, margin: '0 auto 44px', lineHeight: 1.75 }}>
