@@ -284,9 +284,11 @@ unzip deepfake.zip -d DEEPFAKE_DATASET/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/your-username/faceveil
-cd faceveil
+git clone https://github.com/himachhatbar17/Faceveil-Deepfake-Detection-
+cd Faceveil-Deepfake-Detection-
 ```
+
+> After cloning, `Faceveil-Deepfake-Detection-` is the repository root. Project folders such as `src/` and `public/` are located directly inside this directory (not inside a separate top-level `faceveil/` folder).
 
 ---
 
