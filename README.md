@@ -49,8 +49,7 @@ MSTF-Trans  ·  Multi-Stream Temporal Fusion Transformer  ★
             + AdaptiveGatedFusion + Transformer (h=4, d=4)
             Streams  : RGB + Frequency + Optical Flow
             AUC      : 97.6%   Acc : 96.3%   F1 : 95.8%
-```
-
+            
 ---
 
 ## 🏗️ Architecture
@@ -162,6 +161,8 @@ unzip deepfake.zip -d DEEPFAKE_DATASET/
 - Python 3.10+
 - CUDA 11.8+ (recommended: NVIDIA T4 / V100 / A100)
 - 8GB+ GPU VRAM
+
+```
 
 
 
