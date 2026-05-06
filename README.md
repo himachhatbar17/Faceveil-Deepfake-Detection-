@@ -284,8 +284,8 @@ unzip deepfake.zip -d DEEPFAKE_DATASET/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/your-username/faceveil
-cd faceveil
+git clone https://github.com/himachhatbar17/Faceveil-Deepfake-Detection-
+cd Faceveil-Deepfake-Detection-
 ```
 
 ---
