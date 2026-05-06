@@ -51,6 +51,120 @@ MSTF-Trans  ·  Multi-Stream Temporal Fusion Transformer  ★
             AUC      : 97.6%   Acc : 96.3%   F1 : 95.8%
 ```
 
+---
+
+## 🏗️ Architecture
+
+### MSTF-Trans Full Architecture
+
+```
+                     ┌─────────────────────────────────────────────┐
+Input RGB (3,224,224)│  SPATIAL STREAM                             │
+──────────────────── │  EfficientNet-B4 → Linear(1792→256) → (B,256)│
+                     └────────────────────────┬────────────────────┘
+                                              │
+                     ┌────────────────────────▼────────────────────┐
+Input FFT (1,56,56)  │  FREQUENCY STREAM                           │
+──────────────────── │  CNN[32→64→128] → Linear(2048→256) → (B,256)│
+                     └────────────────────────┬────────────────────┘
+                                              │
+                     ┌────────────────────────▼────────────────────┐
+Input Flow (1,56,56) │  TEMPORAL STREAM                            │
+──────────────────── │  CNN[32→64→128] → Linear(1152→128→256)      │
+                     └────────────────────────┬────────────────────┘
+                                              │
+                     ┌────────────────────────▼────────────────────┐
+                     │  CROSS-STREAM TRANSFORMER                   │
+                     │  Tokens: [CLS | s_tok | f_tok | t_tok]      │
+                     │  4× TransformerEncoderLayer (heads=4, D=256) │
+                     │  → CLS token output (B, 256)                │
+                     └────────────────────────┬────────────────────┘
+                                              │
+                     ┌────────────────────────▼────────────────────┐
+                     │  ADAPTIVE GATED FUSION (AGF)                │
+                     │  MLP(768→128→3) → Softmax → weights α       │
+                     │  output = Σ αᵢ · streamᵢ  → LayerNorm       │
+                     └────────────────────────┬────────────────────┘
+                                              │
+                     ┌────────────────────────▼────────────────────┐
+                     │  CLASSIFICATION HEAD                        │
+                     │  Cat[CLS, AGF] → FC(512→128→64→1) → Sigmoid │
+                     └─────────────────────────────────────────────┘
+```
+
+### Adaptive Gated Fusion (AGF) — Core Novelty
+
+The AGF module learns **which stream matters most** for each individual sample:
+
+```python
+# Per-sample dynamic weighting (NOT fixed concatenation)
+alpha = softmax(MLP(concat[s, f, t]))   # (B, 3)  — learned weights
+output = alpha[:,0]*s + alpha[:,1]*f + alpha[:,2]*t
+```
+
+- A **texture-manipulated fake** → model weights spatial stream higher
+- A **temporal-inconsistent fake** → model weights flow stream higher  
+- A **GAN-generated image** → model weights frequency stream higher
+
+---
+
+## 📦 Dataset
+
+**Source:** [Deepfake Detection Dataset — Kaggle](https://www.kaggle.com/datasets/himachhatbar1700/deepfake)
+
+| Split | Total Samples | Real | Fake |
+|-------|-------------|------|------|
+| **Train** | 126,786 | ~50% | ~50% |
+| **Validation** | 27,172 | ~50% | ~50% |
+| **Test** | 27,174 | ~50% | ~50% |
+| **Grand Total** | **181,132** | — | — |
+
+**Modalities:** Images (`.jpg`, `.jpeg`, `.png`, `.bmp`) + Videos (`.mp4`, `.avi`, `.mov`, `.mkv`)
+
+### Expected Directory Structure
+
+```
+DEEPFAKE_DATASET/
+├── split/
+│   ├── train/
+│   │   ├── images/
+│   │   │   ├── real/
+│   │   │   └── fake/
+│   │   └── videos/
+│   │       ├── real/
+│   │       └── fake/
+│   ├── val/
+│   │   ├── images/  {real/, fake/}
+│   │   └── videos/  {real/, fake/}
+│   └── test/
+│       ├── images/  {real/, fake/}
+│       └── videos/  {real/, fake/}
+└── cache/
+    ├── fft_train.json      ← precomputed FFT magnitude maps
+    └── flow_train.json     ← precomputed optical flow maps
+```
+
+### Downloading the Dataset
+
+```bash
+# Install Kaggle CLI
+pip install kaggle
+
+# Set up credentials (~/.kaggle/kaggle.json)
+# Download dataset
+kaggle datasets download -d himachhatbar1700/deepfake
+unzip deepfake.zip -d DEEPFAKE_DATASET/
+
+## ⚙️ Installation
+
+### Requirements
+
+- Python 3.10+
+- CUDA 11.8+ (recommended: NVIDIA T4 / V100 / A100)
+- 8GB+ GPU VRAM
+
+
+
 <br />
 
 ## ablation
