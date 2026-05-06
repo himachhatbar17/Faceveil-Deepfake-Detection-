@@ -331,23 +331,13 @@ tf_depth     4
 seed         42
 ```
 
----
-
-# Training
-
-```bash
-python train.py --model mstf_trans
-```
-
----
-
 # Frontend Stack
 
 ```text
 frontend    React 18 · Recharts · Lucide
 training    PyTorch · torchvision · scikit-learn
 tracking    Loopz framework (checkpoint + metrics)
-dataset     FaceForensics++ (c23 compression)
+dataset     FaceForensics++ , DFDC - selfconstructed.
 ```
 
 ---
@@ -459,7 +449,7 @@ faceveil/
 ```bibtex
 @article{faceveil2026,
   title={FaceVeil: Multi-Stream Deepfake Detection via Adaptive Temporal-Frequency Fusion},
-  author={Your Name},
+  author={Hima Chhatbar},
   year={2026}
 }
 ```
