@@ -10,7 +10,8 @@ from torchvision.models import efficientnet_b4, EfficientNet_B4_Weights
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 import cv2
 import os
-
+app = Flask(__name__)
+CORS(app, origins=["https://faceveil-deepfake-detection.vercel.app"])
 # ── Device ────────────────────────────────────────────────────
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 THRESHOLD = 0.7
