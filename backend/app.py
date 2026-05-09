@@ -12,6 +12,9 @@ import cv2
 import os
 app = Flask(__name__)
 CORS(app, origins=["https://faceveil-deepfake-detection.vercel.app"])
+port = int(os.environ.get("PORT", 7860))
+
+app.run(host="0.0.0.0", port=port)
 # ── Device ────────────────────────────────────────────────────
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 THRESHOLD = 0.7
