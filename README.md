@@ -1,3 +1,13 @@
+---
+title: Faceveil Deepfake Detection
+emoji: 🔥
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
+# Faceveil Deepfake Detection
 <div align="center">
 
 # FaceVeil
