@@ -123,6 +123,7 @@ export default function Detector() {
   const [dragging, setDragging] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('Overview');
   const inputRef = useRef();
 
@@ -132,16 +133,41 @@ export default function Detector() {
     if (!f) return;
     setFile(f);
     setResult(null);
+    setError(null);
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!file) return;
     setAnalyzing(true);
     setResult(null);
-    setTimeout(() => {
+    setError(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model_name', model.id === 'MSTF-Trans' ? 'MSTF-Trans (Full 3-stream — best)' : model.id === 'DSFN' ? 'DSFN (Spatial + Frequency)' : 'SDB (Spatial only — fastest)');
+
+    try {
+      const response = await fetch('/api/predict', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Prediction failed.');
+
+      setResult({
+        label: data.label,
+        scores: data.scores,
+        detail: data.detail,
+        model_name: data.model_name,
+        fakeProb: +(data.scores.FAKE * 100).toFixed(1),
+        realProb: +(data.scores.REAL * 100).toFixed(1),
+      });
+    } catch (err) {
+      setError(err.message || 'Prediction failed.');
+    } finally {
       setAnalyzing(false);
-      setResult(Math.random() > 0.45 ? MOCK_RESULTS.fake : MOCK_RESULTS.real);
-    }, 2200);
+    }
   };
 
   return (
@@ -164,16 +190,16 @@ export default function Detector() {
               background: dragging ? 'rgba(74,120,255,0.04)' : file ? 'rgba(0,223,162,0.03)' : 'rgba(130,140,220,0.02)',
               transition: 'all 0.3s',
             }}>
-            <input ref={inputRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => handleFile(e.target.files[0])} />
-            <div style={{ fontSize: '3rem', marginBottom: 14 }}>{file ? '🎞️' : '🎬'}</div>
+            <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFile(e.target.files[0])} />
+            <div style={{ fontSize: '3rem', marginBottom: 14 }}>{file ? '🖼️' : '📁'}</div>
             <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.05rem', marginBottom: 6 }}>
-              {file ? file.name : 'Drop your file here'}
+              {file ? file.name : 'Drop your image here'}
             </div>
             <div style={{ color: 'var(--muted)', fontSize: '0.83rem', marginBottom: 20 }}>
-              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB · Ready to analyze` : 'Upload an image or video to detect deepfake manipulation'}
+              {file ? `${(file.size / 1024 / 1024).toFixed(2)} MB · Ready to analyze` : 'Upload an image to detect deepfake manipulation'}
             </div>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {['JPG', 'PNG', 'MP4', 'AVI', 'MOV', 'WEBM'].map(f => (
+              {['JPG', 'PNG', 'JPEG'].map(f => (
                 <span key={f} style={{ background: 'rgba(130,140,220,0.08)', border: '1px solid rgba(130,140,220,0.15)', color: 'var(--dim)', padding: '3px 10px', borderRadius: 20, fontSize: '0.72rem', fontFamily: 'DM Mono' }}>{f}</span>
               ))}
             </div>
@@ -192,6 +218,12 @@ export default function Detector() {
             }}>
             {analyzing ? '⏳  Analyzing...' : '⚡  Run Detection'}
           </button>
+
+          {error && (
+            <div style={{ marginTop: 16, padding: 14, borderRadius: 14, background: 'rgba(255,61,90,0.12)', color: 'var(--red)', fontFamily: 'DM Mono', fontSize: '0.9rem', border: '1px solid rgba(255,61,90,0.2)' }}>
+              {error}
+            </div>
+          )}
 
           {/* Config row */}
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
@@ -284,12 +316,12 @@ export default function Detector() {
               {/* Score Ring */}
               <div style={{ background: 'var(--ink3)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                 <ScoreRing
-                  score={result === MOCK_RESULTS.fake ? 82 : 94}
-                  color={result.color}
-                  label={result === MOCK_RESULTS.fake ? 'FAKE' : 'REAL'} />
+                  score={result.fakeProb > result.realProb ? result.fakeProb : result.realProb}
+                  color={result.fakeProb > result.realProb ? 'var(--red)' : 'var(--green)'}
+                  label={result.fakeProb > result.realProb ? 'FAKE' : 'REAL'} />
 
-                <div style={{ background: `${result.color}18`, border: `1px solid ${result.color}44`, color: result.color, padding: '8px 16px', borderRadius: 20, fontFamily: 'DM Mono', fontWeight: 700, fontSize: '0.78rem', textAlign: 'center' }}>
-                  {result.icon} {result.verdict}
+                <div style={{ background: `${result.fakeProb > result.realProb ? 'var(--red)' : 'var(--green)'}18`, border: `1px solid ${result.fakeProb > result.realProb ? 'var(--red)' : 'var(--green)'}44`, color: result.fakeProb > result.realProb ? 'var(--red)' : 'var(--green)', padding: '8px 16px', borderRadius: 20, fontFamily: 'DM Mono', fontWeight: 700, fontSize: '0.78rem', textAlign: 'center' }}>
+                  {result.fakeProb > result.realProb ? '⚠ DEEPFAKE DETECTED' : '✓ AUTHENTIC'}
                 </div>
 
                 {[['Fake Probability', result.fakeProb, 'var(--red)'], ['Real Probability', result.realProb, 'var(--green)']].map(([label, val, color]) => (
@@ -312,8 +344,8 @@ export default function Detector() {
                     <div style={{ fontSize: '0.72rem', fontFamily: 'DM Mono', color: 'var(--muted)', letterSpacing: 1, marginBottom: 12 }}>GradCAM MANIPULATION HEATMAP</div>
                     <Heatmap />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 }}>
-                      {[['Method', result.method], ['Region', result.region], ['Compression', result.compression], ['Frames', result.frames]].map(([k, v]) => (
-                        <div key={k} style={{ background: `${result.color}0d`, border: `1px solid ${result.color}28`, borderRadius: 8, padding: '10px 12px' }}>
+                      {[['Model', result.model_name], ['P(FAKE)', `${result.fakeProb}%`], ['P(REAL)', `${result.realProb}%`], ['Threshold', '0.70']].map(([k, v]) => (
+                        <div key={k} style={{ background: 'rgba(130,140,220,0.04)', borderRadius: 8, padding: '10px 12px' }}>
                           <div style={{ fontSize: '0.68rem', color: 'var(--muted)', marginBottom: 3 }}>{k}</div>
                           <div style={{ fontSize: '0.85rem', fontWeight: 600, fontFamily: 'DM Mono', color: 'var(--text)' }}>{v}</div>
                         </div>
