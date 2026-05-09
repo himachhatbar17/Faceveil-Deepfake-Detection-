@@ -1,6 +1,4 @@
-backend/__pycache__/
 node_modules/
 build/
-backend/checkpoints/
-*.pt
-*.pth
+backend/__pycache__/
+*.pyc
