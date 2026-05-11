@@ -147,10 +147,10 @@ export default function Detector() {
     formData.append('model_name', model.id === 'MSTF-Trans' ? 'MSTF-Trans (Full 3-stream — best)' : model.id === 'DSFN' ? 'DSFN (Spatial + Frequency)' : 'SDB (Spatial only — fastest)');
 
     try {
-      const response = await fetch('https://faceveil-deepfake-detection.onrender.com/api/predict', {
-        method: 'POST',
-        body: formData,
-      });
+     const response = await fetch('/api/predict', {
+  method: 'POST',
+  body: formData,
+});
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Prediction failed.');
