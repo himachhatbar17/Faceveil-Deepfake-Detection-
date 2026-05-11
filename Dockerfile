@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app.py ./app.py
 
 # Copy model checkpoints (if present)
-COPY backend/checkpoints ./checkpoints
+COPY checkpoints ./checkpoints
 
 # Copy built React frontend into a static folder Flask will serve
 COPY build ./static_frontend
