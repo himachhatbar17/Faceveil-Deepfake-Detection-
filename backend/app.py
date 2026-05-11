@@ -249,3 +249,26 @@ def predict():
 if __name__ == '__main__':
     # HF Spaces requires port 7860
     app.run(host='0.0.0.0', port=7860, debug=False)
+
+# 🔁 Self-ping every 14 minutes to prevent HF Space sleep
+import threading
+import urllib.request
+
+def self_ping():
+    import time
+    while True:
+        time.sleep(14 * 60)  # 14 minutes
+        try:
+            url = "https://hima0017-faceveil-deepfake-detection.hf.space/api/health"
+            urllib.request.urlopen(url, timeout=10)
+            print("✅ Self-ping success!")
+        except Exception as e:
+            print(f"❌ Ping failed: {e}")
+
+# Start ping thread when app starts
+ping_thread = threading.Thread(target=self_ping, daemon=True)
+ping_thread.start()
+
+# ══════════════════════════════════════════════════════════════
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=7860, debug=False)
